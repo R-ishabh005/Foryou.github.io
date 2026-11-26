@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06060f">
+  <!-- Keeps search engines from listing the page. -->
+  <meta name="robots" content="noindex, nofollow">
+  <!-- Neutral title on purpose: the first page must not hint at anything. -->
+  <title>Hidden Door</title>
+  <!-- Empty icon so browsers do not look for a favicon file. -->
+  <link rel="icon" href="data:,">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Space+Mono:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="mode-landing">
+
+  <!-- =====================================================================
+       PART 1 — SECRET LANDING PAGE
+       Nothing in this block mentions or hints at anything special.
+       ===================================================================== -->
+  <main id="landing" class="landing">
+    <canvas id="sky" aria-hidden="true"></canvas>
+    <div id="cursorGlow" class="cursor-glow" aria-hidden="true"></div>
+
+    <!-- Slow floating abstract shapes (pure CSS, decorative) -->
+    <div id="shapes" class="shapes" aria-hidden="true">
+      <span class="shape ring"></span>
+      <span class="shape diamond"></span>
+      <span class="shape tri"></span>
+      <span class="shape plus"></span>
+      <span class="shape ring small"></span>
+    </div>
+
+    <header class="landing-top gx">
+      <span id="tagLeft" class="mono tag">// unlisted</span>
+      <span id="tagRight" class="mono tag tag-right" aria-hidden="true">signal: faint</span>
+    </header>
+
+    <section class="landing-center gx">
+      <p id="whisper" class="whisper mono" aria-live="polite">Shhh. Yahan koi nahi hai.</p>
+
+      <button id="openBtn" class="orb" type="button" aria-label="Open">
+        <span class="orb-ring"></span>
+        <span class="orb-ring r2"></span>
+        <span class="orb-core"><span class="orb-label">OPEN</span></span>
+      </button>
+    </section>
+
+    <footer class="landing-bottom gx">
+      <button id="pwBtn" class="pw-btn" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="9" r="4.2"/>
+          <path d="M12 13.2v2.3M10.2 21l1-4.4M13.8 21l-1-4.4M8 21h8"/>
+        </svg>
+        <span>ENTER PASSWORD</span>
+      </button>
+    </footer>
+
+    <!-- Animated popup used for the OPEN messages -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <!-- Password window -->
+    <div id="pwModal" class="modal" hidden>
+      <div class="modal-backdrop" data-close></div>
+      <form id="pwForm" class="modal-panel" autocomplete="off" novalidate role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+        <button type="button" class="modal-x" data-close aria-label="Close">&times;</button>
+        <p id="pwKicker" class="mono modal-kicker">// access</p>
+        <h2 id="pwTitle" class="modal-title">Secret word?</h2>
+
+        <label class="field" for="pwInput">
+          <span class="field-label mono">password</span>
+          <span class="field-wrap">
+            <input id="pwInput" name="pw" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="type it here...">
+            <button id="pwToggle" type="button" class="eye" aria-label="Show password" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+                <path class="eye-slash" d="M4 4l16 16"/>
+              </svg>
+            </button>
+          </span>
+        </label>
+
+        <p id="pwError" class="pw-error" role="alert"></p>
+        <button type="submit" class="pw-submit">Unlock</button>
+      </form>
+    </div>
+  </main>
+
+
+  <!-- Full-screen circle that grows from the OPEN button during the transition -->
+  <div id="iris" class="iris" aria-hidden="true"></div>
+
+  <!-- Confetti layer (used after unlocking) -->
+  <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+
+
+  <!-- =====================================================================
+       PART 2 — EVERYTHING BELOW STAYS HIDDEN UNTIL UNLOCKED
+       ===================================================================== -->
+  <div id="birthday" class="birthday" hidden>
+
+    <!-- 2a. Envelope + reveal ------------------------------------------------>
+    <section id="reveal" class="reveal">
+
+      <div id="envStage" class="env-stage gx">
+        <p id="envHint" class="env-hint">Kuch hai tere liye.<br>Seal pe tap kar.</p>
+
+        <button id="envelope" class="envelope" type="button" aria-label="Open the envelope">
+          <span class="env-back"></span>
+          <span class="env-letter">
+            <span class="env-letter-inner">
+              <i>for</i>
+              <b>Nikki</b>
+            </span>
+          </span>
+          <span class="env-front env-left"></span>
+          <span class="env-front env-right"></span>
+          <span class="env-front env-bottom"></span>
+          <span class="env-flap"></span>
+          <span class="env-seal" aria-hidden="true">&hearts;</span>
+        </button>
+      </div>
+
+      <div id="hero" class="hero gx" hidden>
+        <h1 class="hero-title" aria-label="Happy Birthday Nikki ❤️">
+          <span class="line" aria-hidden="true">
+            <span class="w" style="--d:.1s">Happy</span>
+            <span class="w" style="--d:.3s">Birthday</span>
+          </span>
+          <span class="line name" aria-hidden="true">
+            <span class="w name-text" style="--d:.65s">Nikki</span>
+            <span class="w heart" style="--d:1.05s">❤️</span>
+          </span>
+        </h1>
+        <p class="hero-sub">Chhattis jagah se, chhattis tarah se &mdash; sirf tere liye.</p>
+        <button id="toScratch" class="cta" type="button">Scratch karke dekho</button>
+      </div>
+    </section>
+
+
+    <!-- 2b. Scratch cards ---------------------------------------------------->
+    <section id="scratchSection" class="scratch gx" hidden>
+      <header class="s-head">
+        <p class="eyebrow">28 states &middot; 8 union territories</p>
+        <h2 class="s-title">Poore Bharat se, tere liye</h2>
+        <p class="s-sub">Har card ko ungli ya mouse se ghis kar dekho.</p>
+
+        <div class="progress" aria-live="polite">
+          <div class="progress-top">
+            <span><b id="progCount">0</b> / 36 revealed</span>
+            <span id="progLeft" class="progress-left"></span>
+          </div>
+          <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="36" aria-valuenow="0" id="progBarWrap"><i id="progBar"></i></div>
+        </div>
+      </header>
+
+      <nav id="pager" class="pager" aria-label="Pages of cards"></nav>
+      <h3 id="pageTitle" class="page-title"></h3>
+
+      <div id="grid" class="grid"></div>
+
+      <div class="page-nav">
+        <button id="prevPage" class="ghost" type="button">&larr; Pichla</button>
+        <button id="nextPage" class="ghost" type="button">Agla &rarr;</button>
+      </div>
+
+      <p id="finalHint" class="final-hint"></p>
+      <div class="finale-cta-wrap">
+        <button id="toFinal" class="cta" type="button" hidden>Aakhri baat padho</button>
+      </div>
+    </section>
+
+
+    <!-- 2c. Final personal message ------------------------------------------->
+    <section id="finalSection" class="final gx" hidden>
+      <article class="letter">
+        <span class="letter-seal" aria-hidden="true">&hearts;</span>
+        <p class="eyebrow dark">Meri taraf se</p>
+        <h2 class="letter-to">Nikki,</h2>
+
+        <!-- =================================================================
+             EDIT YOUR PERSONAL MESSAGE HERE
+             Replace the text inside the <p> below. For a longer message,
+             copy the whole <p>...</p> line and paste it again underneath,
+             one <p> for every paragraph. That is all you need to change.
+             ================================================================= -->
+        <div id="personalMessage" class="letter-body">
+          <p>Ek baar fir se, Happy Birthday Nikki.</p>
+          <p>Waise toh ab tu mere hi barabar ho gayi hai, lekin fir bhi main tere se 4 mahine bada hoon. Toh us hisaab se mujhe treat kiya kar, izzat dena seekh mujhe.</p>
+          <p>May God tujhe wo sab de jo tujhe chahiye. Aur agar wo tere liye achha na bhi ho, toh bhi de de, bas use achhe mein convert karke.</p>
+        </div>
+        <!-- ================= END OF PERSONAL MESSAGE ======================= -->
+      </article>
+
+      <button id="toTop" class="ghost" type="button">&uarr; Wapas upar</button>
+    </section>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
