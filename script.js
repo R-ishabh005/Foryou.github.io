@@ -36,7 +36,7 @@ const CONFIG = {
 
      Reminder: this is a fun guessing game, NOT real security. Anyone who
      opens the browser's "View source" can read this file and see the word. */
-  PASSWORD: "nikki29",
+  PASSWORD: "foryounikki",
 
   /* ---- LOOK OF THE FIRST PAGE ------------------------------------------
      "space" = blue/violet night sky with a glowing OPEN orb
