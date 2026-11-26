@@ -230,9 +230,51 @@ const tabStore = {
 /* The unlock moment as an absolute point in time (independent of time zones) */
 const UNLOCK_TIME = Date.parse(CONFIG.UNLOCK_AT);
 
-/* True once the real clock has passed 29 Nov 2026, 12:00 AM IST */
+/* ---- TRUSTED CLOCK ------------------------------------------------------
+   The visitor's phone clock can be changed, so we do not trust it alone.
+   GitHub tells us the real time in the "Date" header of every reply. We ask
+   for it (a tiny request for this same page) and work out how far the phone
+   clock is off. If that request fails (no internet, opened as a plain file,
+   etc.) we simply fall back to the phone clock, so the site never gets stuck. */
+let clockOffset = null;      /* real time minus phone time, in ms (null = unknown) */
+let clockRequest = null;     /* the request that is running right now, if any */
+
+function syncClock() {
+  if (clockRequest) return clockRequest;
+  clockRequest = new Promise((resolve) => {
+    let finished = false;
+    const done = (ok) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      clockRequest = null;
+      resolve(ok);
+    };
+    const timer = setTimeout(() => done(false), 4000);
+    const sent = Date.now();
+    fetch(window.location.pathname + "?clock=" + sent, { method: "HEAD", cache: "no-store" })
+      .then((res) => {
+        const server = Date.parse(res.headers.get("Date") || "");
+        if (isNaN(server)) { done(false); return; }
+        const age = (Number(res.headers.get("Age")) || 0) * 1000;   /* time spent in a cache */
+        const received = Date.now();
+        /* the Date header was written about halfway through the round trip */
+        clockOffset = server + age + (received - sent) / 2 - received;
+        done(true);
+      })
+      .catch(() => done(false));
+  });
+  return clockRequest;
+}
+
+/* "Now", corrected with the server's time when we have it */
+function nowMs() {
+  return Date.now() + (clockOffset || 0);
+}
+
+/* True once the (corrected) clock has passed 29 Nov 2026, 12:00 AM IST */
 function isPastUnlockTime() {
-  return Date.now() >= UNLOCK_TIME;
+  return nowMs() >= UNLOCK_TIME;
 }
 
 /* OPEN works only after the date. (A password entry never changes this,
@@ -711,7 +753,10 @@ function shakeOrb() {
 }
 
 /* The click counter is saved in the browser, so a refresh does not reset it */
-function onOpenClick() {
+async function onOpenClick() {
+  /* Ask for the real time on every try, so changing the phone clock
+     after the page has loaded does not help either. */
+  await syncClock();
   if (isUnlocked()) {
     startBirthday(openBtn);
     return;
@@ -1266,6 +1311,7 @@ function init() {
   initPasswordWindow();
   createFireflies();
   startWhispers();
+  syncClock();                                   /* learn the real time early */
   openBtn.addEventListener("click", onOpenClick);
 }
 
