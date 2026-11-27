@@ -36,7 +36,17 @@ const CONFIG = {
 
      Reminder: this is a fun guessing game, NOT real security. Anyone who
      opens the browser's "View source" can read this file and see the word. */
-  PASSWORD: "foryounikki",
+  PASSWORD: "@foryounikki",
+
+  /* ---- "OPENED" NOTIFICATION ---------------------------------------------
+     When the surprise opens (by date OR by password) a short push message is
+     sent to YOU through the free ntfy.sh service.
+     Setup: install the free "ntfy" app, tap "+" and subscribe to the topic
+     name below. Nothing else about her is sent, only the words
+     "opened", how it was opened and the time.
+     To turn this off, make it empty:  NOTIFY_TOPIC: "",
+     (This name is like a password for your notifications. Keep it private.) */
+  NOTIFY_TOPIC: "door-593abd2b31c2a5e9",
 
   /* ---- LOOK OF THE FIRST PAGE ------------------------------------------
      "space" = blue/violet night sky with a glowing OPEN orb
@@ -229,6 +239,25 @@ const tabStore = {
 
 /* The unlock moment as an absolute point in time (independent of time zones) */
 const UNLOCK_TIME = Date.parse(CONFIG.UNLOCK_AT);
+
+/* ---- "OPENED" NOTIFICATION (see CONFIG.NOTIFY_TOPIC) ---------------------
+   Sends one small message to ntfy.sh. It never blocks the surprise: if the
+   internet is slow or ntfy.sh is down, nothing happens and nothing shows. */
+function notifyOpened(how) {
+  const topic = (CONFIG.NOTIFY_TOPIC || "").trim();
+  if (!topic) return;
+  try {
+    const when = new Date(Date.now() + (clockOffset || 0)).toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "numeric", minute: "2-digit",
+    });
+    fetch("https://ntfy.sh/" + encodeURIComponent(topic) + "?title=" + encodeURIComponent("Opened by her") + "&tags=tada", {
+      method: "POST",
+      mode: "no-cors",
+      keepalive: true,
+      body: "Nikki ne surprise khol diya (" + how + "). " + when + " IST",
+    }).catch(() => {});
+  } catch (e) { /* ignore */ }
+}
 
 /* ---- TRUSTED CLOCK ------------------------------------------------------
    The visitor's phone clock can be changed, so we do not trust it alone.
@@ -848,6 +877,7 @@ let started = false;
 function startBirthday(originEl) {
   if (started) return;
   started = true;
+  notifyOpened(originEl === pwBtn ? "password" : "OPEN button");
 
   const iris = $("iris");
   const r = originEl.getBoundingClientRect();
